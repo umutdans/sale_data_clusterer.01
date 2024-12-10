@@ -24,7 +24,7 @@ class ClusteringClass:
     def set_data(self):
         filename = filedialog.askopenfilename()
         data = pd.read_excel(filename)
-        self.initial_columns = data.columns.tolist()  # Store initial columns
+        self.initial_columns = data.columns.tolist()
         print("Data is selected")
         return data
 
@@ -34,18 +34,18 @@ class ClusteringClass:
         for column in data.columns:
             if data[column].dtype == 'object':
                 unique_values = data[column].nunique()
-                if column == 'Grade':  # Assuming 'Grade' is the only ordinal column
+                if column == 'Grade': 
                     le = LabelEncoder()
                     data[column] = le.fit_transform(data[column].astype(str))
                     label_encoders[column] = le
-                elif unique_values < 100:  # Apply one-hot encoding only if unique values are less than 100
+                elif unique_values < 100:
                     ohe = OneHotEncoder(sparse_output=False, drop='first')
                     transformed_data = ohe.fit_transform(data[[column]])
                     ohe_df = pd.DataFrame(transformed_data, columns=ohe.get_feature_names_out([column]))
                     data = pd.concat([data.drop(column, axis=1), ohe_df], axis=1)
                     one_hot_encoders[column] = ohe
                     self.original_to_encoded_columns[column] = ohe_df.columns.tolist()
-                else:  # Use label encoding for high cardinality columns
+                else: 
                     le = LabelEncoder()
                     data[column] = le.fit_transform(data[column].astype(str))
                     label_encoders[column] = le
@@ -66,7 +66,7 @@ class ClusteringClass:
         root.title("Select Feature Columns")
 
         checkboxes = {}
-        for col in self.initial_columns:  # Use initial columns for checkboxes
+        for col in self.initial_columns: 
             var = ctk.IntVar()
             chk = ctk.CTkCheckBox(root, text=col, variable=var)
             chk.pack(anchor='w')
@@ -104,9 +104,7 @@ class ClusteringClass:
         range_n_clusters = [2, 3, 4, 5]
         silhouette_avgs = []
 
-        start_time = time.time()  # Start timing
-
-        x_sampled = self.sample_data(x, 1000)  # Sample 1000 rows
+        x_sampled = self.sample_data(x, 1000)
 
         for n_clusters in range_n_clusters:
             if method == 'kmeans':
@@ -120,16 +118,14 @@ class ClusteringClass:
             silhouette_avg = silhouette_score(x_sampled, cluster_labels)
             silhouette_avgs.append(silhouette_avg)
 
-        end_time = time.time()  # End timing
-
-        plt.figure()  # Ensure a new figure is created
+        plt.figure()  
         plt.plot(range_n_clusters, silhouette_avgs, marker='o')
         plt.title(f'Silhouette Scores for {method.upper()}')
         plt.xlabel('Number of clusters')
         plt.ylabel('Silhouette Score')
         plt.tight_layout()
 
-        # Save the plot in the specified directory
+       
         if save_dir:
             plt.savefig(os.path.join(save_dir, f"silhouette_scores_{method}.png"))
 
@@ -170,7 +166,7 @@ class ClusteringClass:
         return original_data
 
     def show_clusters(self, data, method_name, save_dir):
-        # Plot 1
+        
         plt.figure(figsize=(12, 8))
         displot(data=data, x='Cluster', hue="Grade", multiple="stack", aspect=2, height=5)
         plt.title('Amount of Sales in Cluster for Each Grade')
@@ -178,7 +174,7 @@ class ClusteringClass:
         plt.savefig(os.path.join(save_dir, f"{method_name}_sales_in_cluster_for_each_grade.png"))
         plt.close()
 
-        # Plot 2 - Limit to top 50 categories
+
         top_categories = data['Kategori'].value_counts().nlargest(50).index
         filtered_data = data[data['Kategori'].isin(top_categories)]
         plt.figure(figsize=(12, 8))
@@ -188,7 +184,7 @@ class ClusteringClass:
         plt.savefig(os.path.join(save_dir, f"{method_name}_sales_in_categories_for_each_cluster.png"))
         plt.close()
 
-        # Plot 3
+        
         plt.figure(figsize=(12, 8))
         filtered_data = data[data['Perakende'] <= 7000]  # Filter out outliers for plotting
         catplot(data=filtered_data, x='Perakende', y='Cluster', hue='Cluster', kind='violin', aspect=1.5, height=10)
@@ -197,7 +193,7 @@ class ClusteringClass:
         plt.savefig(os.path.join(save_dir, f"{method_name}_sales_prices_for_each_cluster.png"))
         plt.close()
 
-        # Plot 4
+        
         plt.figure(figsize=(12, 8))
         countplot(data=data, y='Lokasyon', hue='Cluster')
         plt.title('Sales Distribution Across Locations and Clusters')
@@ -208,7 +204,7 @@ class ClusteringClass:
         plt.savefig(os.path.join(save_dir, f"{method_name}_sales_distribution_across_locations_and_clusters.png"))
         plt.close()
 
-        # Plot 5
+       
         plt.figure(figsize=(12, 8))
         countplot(data=data, x='Cinsiyet', hue='Cluster')
         plt.title('Gender Distribution of Sales')
@@ -226,7 +222,7 @@ class ClusteringClass:
         return save_dir
 
     def run_all_clustering_methods(self, data):
-        original_data = data.copy()  # Keep a copy of the original data with string values
+        original_data = data.copy()
         data = self.convert_string_to_numeric(data)
         x = self.set_feature_column(data)
         save_dir = self.create_save_directory()
@@ -234,7 +230,6 @@ class ClusteringClass:
         self.agglomerative_clustering_func(data.copy(), x, 30000, original_data.copy(), save_dir)
         self.gmm_clustering_func(data.copy(), x, 30000, original_data.copy(), save_dir)
 
-# Example usage
 if __name__ == "__main__":
     clustering_instance = ClusteringClass()
     data = clustering_instance.set_data()
