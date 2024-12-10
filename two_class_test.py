@@ -67,24 +67,22 @@ class ClusteringClass:
 
         data['top20_categories'] = data['Category'].apply(lambda x: x if x in top_20_categories else 'DIGER')
 
-        # Set feature columns to be used in kmeans process
+        
         feature_columns = (['Grade_num', 'Perakende']
                             + [col for col in data.columns if 'Brand_' in col or 'Category_' in col])
 
-        y = data[feature_columns]  # Create a subset X using feature columns from data
+        y = data[feature_columns]  
 
         return y
 
     def set_cluster_count(self):
-        # Set appearance for input box
+        
         customtkinter.set_appearance_mode("dark")
         customtkinter.set_default_color_theme("dark-blue")
 
-        # Create a dialog box
         dialog = customtkinter.CTkInputDialog(text="Enter desired cluster count :", title='Set Cluster Number',
                                               button_fg_color='#01675A', button_hover_color='#AAC980')
-
-        # Convert value to an integer and return it with n_cluster variable
+  
         n_cluster = int(dialog.get_input())
         return n_cluster
 
@@ -144,8 +142,6 @@ class ClusteringClass:
     def elbow_method(self, data):
 
         x = self.set_feature_column(data)
-
-        # Create a SSE to cluster number graph with n going up to 10
         sse = {}
         for k in range(1, 10):
             kmeans = KMeans(n_clusters=k, max_iter=1000).fit(x)
